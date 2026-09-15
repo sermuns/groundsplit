@@ -1,5 +1,10 @@
+use std::io::{BufWriter, Write};
+
 use clap::Parser;
-use piet_common::{Device, RenderContext};
+use piet_common::{
+    Brush, Device, ImageFormat, RenderContext,
+    kurbo::{Point, Rect, Size},
+};
 
 // TODO: make not constant
 const WIDTH: usize = 1920;
@@ -14,15 +19,24 @@ struct Args {
 }
 
 fn main() -> color_eyre::Result<()> {
+    let mut frame_buf = vec![0u8; WIDTH * HEIGHT * 4];
     let mut device = Device::new().unwrap();
     let mut bitmap = device.bitmap_target(WIDTH, HEIGHT, 1.0).unwrap();
+    let mut stdout = BufWriter::new(std::io::stdout().lock());
     {
         let mut ctx = bitmap.render_context();
 
-        ctx.finish().unwrap();
-    }
+        ctx.fill(
+            Rect::from_origin_size(Point::new(0., 0.), Size::new(200., 100.)),
+            &Brush::Solid(0xffff00ff),
+        );
 
-    bitmap.save_to_file("temp-image.png").unwrap();
+        ctx.finish().unwrap();
+        bitmap
+            .copy_raw_pixels(ImageFormat::RgbaPremul, &mut frame_buf)
+            .unwrap();
+        stdout.write_all(&frame_buf).unwrap();
+    }
 
     Ok(())
 }

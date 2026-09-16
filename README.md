@@ -6,7 +6,11 @@
 
 Generate graphics similar to what LiveSplit[^1] would output, but **BLAZINGLY FAST!**
 
-## Why not just use LiveSplit[^1]?
+## How does this compare to LiveSplit[^1]?
+
+LiveSplit is well-suited for real time splitting, and presented as a GUI program.
+
+`splits-rs` is a command-line tool for generating the graphics after the fact using a data file.
 
 <div align=center>
 

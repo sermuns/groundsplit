@@ -2,6 +2,7 @@
 name = "splits-rs"
 version = "0.1.0"
 edition = "2024"
+description = "Tiny command-line tool for creating and rendering graphics similar to what LiveSplit would output."
 license = "GPL-3.0-only"
 
 default-run = "splits-rs"

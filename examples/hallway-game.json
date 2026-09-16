@@ -1,0 +1,17 @@
+{
+	"title": "Hallway Game",
+	"splits": [
+		{
+			"name": "Claw Sequence",
+			"ms_since_start": 4000
+		},
+		{
+			"name": "1st Phase",
+			"ms_since_start": 10000
+		},
+		{
+			"name": "2nd Phase Start",
+			"ms_since_start": 16000
+		}
+	]
+}

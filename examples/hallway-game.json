@@ -12,6 +12,30 @@
 		{
 			"name": "2nd Phase Start",
 			"ms_since_start": 16000
+		},
+		{
+			"name": "Poke Sequence",
+			"ms_since_start": 20000
+		},
+		{
+			"name": "Final Phase Cutscene",
+			"ms_since_start": 25000
+		},
+		{
+			"name": "Final Phase Start",
+			"ms_since_start": 29000
+		},
+		{
+			"name": "Peace Negotiation ...",
+			"ms_since_start": 41000
+		},
+		{
+			"name": "Final Claw Sequence",
+			"ms_since_start": 54000
+		},
+		{
+			"name": "Final",
+			"ms_since_start": 59000
 		}
 	]
 }

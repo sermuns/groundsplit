@@ -1,6 +1,6 @@
 <div align="center">
 
-# `splits-rs`
+# `groundsplit`
 
 </div>
 
@@ -10,9 +10,15 @@ Generate graphics similar to what LiveSplit[^1] would output, but **BLAZINGLY FA
 
 LiveSplit is well-suited for real time splitting, and presented as a GUI program.
 
-`splits-rs` is a command-line tool for generating the graphics after the fact using a data file.
+`groundsplit` is a command-line tool for generating the graphics after the fact using a data file.
 
 <div align=center>
+
+## What's with the name?
+
+In a way, `groundsplit` is opposite to LiveSplit, being that it it meant to be used after the speedrun.
+
+In an electronic context, the opposite of "live" could be considered "ground".
 
 ---
 

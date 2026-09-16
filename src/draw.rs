@@ -1,6 +1,6 @@
 use piet_common::{
-    Brush, CairoRenderContext, CairoText, Color, FontFamily, RenderContext, Text, TextLayout,
-    TextLayoutBuilder, TextStorage,
+    BitmapTarget, Brush, CairoText, Color, FontFamily, ImageFormat, RenderContext, Text,
+    TextLayout, TextLayoutBuilder, TextStorage,
     kurbo::{Line, Point, Rect, Size, Vec2},
 };
 
@@ -31,30 +31,46 @@ pub const FONT_SIZE: f64 = 25.;
 pub const TIME_FONT_SIZE: f64 = FONT_SIZE * 2.0;
 
 pub struct Context<'a> {
-    ctx: &'a mut CairoRenderContext<'a>,
+    bitmap: BitmapTarget<'a>,
     text: CairoText,
+    pub frame_buf: Vec<u8>,
+    width_px: usize,
+    height_px: usize,
 }
 
 impl<'a> Context<'a> {
-    pub fn new(ctx: &'a mut CairoRenderContext<'a>) -> Self {
+    pub fn new(bitmap: BitmapTarget<'a>, width_px: usize, height_px: usize) -> Self {
+        let frame_buf = vec![0u8; width_px * height_px * 4];
         let text = CairoText::new();
-        Self { ctx, text }
+        Self {
+            bitmap,
+            text,
+            frame_buf,
+            height_px,
+            width_px,
+        }
     }
 
-    pub fn draw(
+    pub fn draw_to_frame_buf(
         &mut self,
         title: impl TextStorage,
         splits: &[Split],
-        time: impl TextStorage,
-        width_px: usize,
-        height_px: usize,
+        milliseconds_since_start: u128,
         padding: f64,
         dpi: f64,
     ) {
-        let Self { ctx, text } = self;
+        let Self {
+            bitmap,
+            text,
+            frame_buf,
+            width_px,
+            height_px,
+        } = self;
 
-        let width_px_f64 = width_px as f64;
-        let height_px_f64 = height_px as f64;
+        let mut ctx = bitmap.render_context();
+
+        let width_px_f64 = *width_px as f64;
+        let height_px_f64 = *height_px as f64;
         let split_height_px = SPLIT_HEIGHT_IN * dpi;
         let line_thickness_px = LINE_THICKNESS_IN * dpi;
         let padding_px = padding * dpi;
@@ -92,6 +108,8 @@ impl<'a> Context<'a> {
                 },
         );
 
+        let mut found_current_split = false;
+
         for (i, split) in splits.iter().enumerate() {
             let split_rect = Rect::from_origin_size(
                 Point {
@@ -103,7 +121,10 @@ impl<'a> Context<'a> {
                     height: split_height_px,
                 },
             );
-            if i % 2 == 1 {
+            if !found_current_split && split.ms_since_start >= milliseconds_since_start {
+                ctx.fill(split_rect, &Brush::Solid(DARK_BLUE));
+                found_current_split = true;
+            } else if i % 2 == 1 {
                 ctx.fill(split_rect, &Brush::Solid(DARK_BACKGROUND));
             }
             let name_text = text
@@ -153,12 +174,14 @@ impl<'a> Context<'a> {
             );
         }
 
-        let time_height_px = TIME_HEIGHT_IN * dpi;
         let time_y_px =
             title_rect.height() + (split_height_px + line_thickness_px) * splits.len() as f64;
 
+        let seconds = milliseconds_since_start / 1000;
+        let microseconds = (milliseconds_since_start % 1000) / 10;
+
         let time_text = text
-            .new_text_layout(time)
+            .new_text_layout(format!("{:02}.{:02}", seconds, microseconds))
             .text_color(TEXT_COLOR)
             .font(FONT_FAMILY, TIME_FONT_SIZE)
             .build()
@@ -172,5 +195,9 @@ impl<'a> Context<'a> {
         );
 
         ctx.finish().unwrap();
+
+        bitmap
+            .copy_raw_pixels(ImageFormat::RgbaPremul, frame_buf)
+            .unwrap();
     }
 }

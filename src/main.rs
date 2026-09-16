@@ -2,7 +2,7 @@ use std::{fs::File, path::PathBuf, rc::Rc};
 
 use clap::Parser;
 use ffmpeg_sidecar::command::FfmpegCommand;
-use piet_common::{Device, ImageFormat};
+use piet_common::Device;
 use splits_rs::{
     Splits,
     draw::{Context, LINE_THICKNESS_IN, SPLIT_HEIGHT_IN, TIME_HEIGHT_IN, TITLE_HEIGHT_IN},
@@ -59,11 +59,8 @@ fn main() -> color_eyre::Result<()> {
     let height_px = (height * dpi) as usize;
 
     let mut device = Device::new().unwrap();
-    let mut bitmap = device.bitmap_target(width_px, height_px, 1.).unwrap();
-    let mut ctx = bitmap.render_context();
-    let mut frame_buf = vec![0u8; width_px * height_px * 4];
-
-    let mut context = Context::new(&mut ctx);
+    let bitmap = device.bitmap_target(width_px, height_px, 1.).unwrap();
+    let mut context = Context::new(bitmap, width_px, height_px);
 
     let mut ffmpeg_child = FfmpegCommand::new()
         .format("rawvideo")
@@ -75,19 +72,28 @@ fn main() -> color_eyre::Result<()> {
         .output(output_path.to_str().unwrap())
         .spawn()?;
 
-    let last_ms = splits.last().unwrap().ms_since_start;
-    for current_ms in 0..last_ms {
+    let video_duration_ms = splits.last().unwrap().ms_since_start;
+    let ms_per_frame = 1000. / fps;
+    // WARNING: truncatingk
+    let num_frames = (video_duration_ms as f32 / ms_per_frame) as usize;
 
+    for frame_number in 0..num_frames {
+        eprintln!("doing frame {}", frame_number);
+
+        let milliseconds_since_start = (ms_per_frame * frame_number as f32) as u128;
+
+        context.draw_to_frame_buf(
+            title_rc.clone(),
+            &splits,
+            milliseconds_since_start,
+            padding,
+            dpi,
+        );
+
+        ffmpeg_child.send_stdin_command(&context.frame_buf).unwrap();
     }
 
-    context.draw(title_rc, &splits, "ok", width_px, height_px, padding, dpi);
-
-    bitmap
-        .copy_raw_pixels(ImageFormat::RgbaPremul, &mut frame_buf)
-        .unwrap();
-    ffmpeg_child.send_stdin_command(&frame_buf).unwrap();
     ffmpeg_child.quit().unwrap();
-
     eprintln!("written to '{}'", output_path.display());
 
     Ok(())

@@ -25,7 +25,7 @@ struct Args {
     padding: f64,
 
     /// "Dots per inch" / pixel density. Determines output width/height.
-    #[arg(long, default_value_t = 96.)]
+    #[arg(long, default_value_t = 200.)]
     dpi: f64,
 
     #[arg(short = 'r', long, default_value_t = 30.)]
@@ -60,7 +60,7 @@ fn main() -> color_eyre::Result<()> {
 
     let mut device = Device::new().unwrap();
     let bitmap = device.bitmap_target(width_px, height_px, 1.).unwrap();
-    let mut context = Context::new(bitmap, width_px, height_px);
+    let mut context = Context::new(bitmap, width_px, height_px, dpi, padding);
 
     let mut ffmpeg_child = FfmpegCommand::new()
         .format("rawvideo")
@@ -82,13 +82,7 @@ fn main() -> color_eyre::Result<()> {
 
         let milliseconds_since_start = (ms_per_frame * frame_number as f32) as u128;
 
-        context.draw_to_frame_buf(
-            title_rc.clone(),
-            &splits,
-            milliseconds_since_start,
-            padding,
-            dpi,
-        );
+        context.draw_to_frame_buf(title_rc.clone(), &splits, milliseconds_since_start);
 
         ffmpeg_child.send_stdin_command(&context.frame_buf).unwrap();
     }

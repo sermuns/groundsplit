@@ -27,8 +27,8 @@ pub const TIME_HEIGHT_IN: f64 = 2.0 * SPLIT_HEIGHT_IN;
 pub const LINE_THICKNESS_IN: f64 = 0.01;
 
 pub const FONT_FAMILY: FontFamily = FontFamily::SANS_SERIF;
-pub const FONT_SIZE: f64 = 25.;
-pub const TIME_FONT_SIZE: f64 = FONT_SIZE * 2.0;
+pub const FONT_SIZE_IN: f64 = 0.25;
+pub const TIME_FONT_SIZE_IN: f64 = FONT_SIZE_IN * 2.0;
 
 pub struct Context<'a> {
     bitmap: BitmapTarget<'a>,
@@ -36,10 +36,18 @@ pub struct Context<'a> {
     pub frame_buf: Vec<u8>,
     width_px: usize,
     height_px: usize,
+    dpi: f64,
+    padding: f64,
 }
 
 impl<'a> Context<'a> {
-    pub fn new(bitmap: BitmapTarget<'a>, width_px: usize, height_px: usize) -> Self {
+    pub fn new(
+        bitmap: BitmapTarget<'a>,
+        width_px: usize,
+        height_px: usize,
+        dpi: f64,
+        padding: f64,
+    ) -> Self {
         let frame_buf = vec![0u8; width_px * height_px * 4];
         let text = CairoText::new();
         Self {
@@ -48,6 +56,8 @@ impl<'a> Context<'a> {
             frame_buf,
             height_px,
             width_px,
+            dpi,
+            padding,
         }
     }
 
@@ -56,8 +66,6 @@ impl<'a> Context<'a> {
         title: impl TextStorage,
         splits: &[Split],
         milliseconds_since_start: u128,
-        padding: f64,
-        dpi: f64,
     ) {
         let Self {
             bitmap,
@@ -65,7 +73,10 @@ impl<'a> Context<'a> {
             frame_buf,
             width_px,
             height_px,
+            ..
         } = self;
+
+        let Self { dpi, padding, .. } = *self;
 
         let mut ctx = bitmap.render_context();
 
@@ -74,6 +85,7 @@ impl<'a> Context<'a> {
         let split_height_px = SPLIT_HEIGHT_IN * dpi;
         let line_thickness_px = LINE_THICKNESS_IN * dpi;
         let padding_px = padding * dpi;
+        let font_size_px = FONT_SIZE_IN * dpi;
 
         ctx.fill(
             Rect::from_origin_size(
@@ -89,7 +101,7 @@ impl<'a> Context<'a> {
         let title_text = text
             .new_text_layout(title)
             .text_color(TEXT_COLOR)
-            .font(FONT_FAMILY, FONT_SIZE)
+            .font(FONT_FAMILY, font_size_px)
             .build()
             .unwrap();
         let title_rect = Rect::from_origin_size(
@@ -130,7 +142,7 @@ impl<'a> Context<'a> {
             let name_text = text
                 .new_text_layout(split.name.clone()) // TODO: less alloc
                 .text_color(TEXT_COLOR)
-                .font(FONT_FAMILY, FONT_SIZE)
+                .font(FONT_FAMILY, font_size_px)
                 .build()
                 .unwrap();
 
@@ -147,7 +159,7 @@ impl<'a> Context<'a> {
             let split_time_text = text
                 .new_text_layout(split.duration_since_start_str())
                 .text_color(TEXT_COLOR)
-                .font(FONT_FAMILY, FONT_SIZE)
+                .font(FONT_FAMILY, font_size_px)
                 .build()
                 .unwrap();
             ctx.draw_text(
@@ -180,10 +192,11 @@ impl<'a> Context<'a> {
         let seconds = milliseconds_since_start / 1000;
         let microseconds = (milliseconds_since_start % 1000) / 10;
 
+        let time_font_size_px = TIME_FONT_SIZE_IN * dpi;
         let time_text = text
             .new_text_layout(format!("{:02}.{:02}", seconds, microseconds))
             .text_color(TEXT_COLOR)
-            .font(FONT_FAMILY, TIME_FONT_SIZE)
+            .font(FONT_FAMILY, time_font_size_px)
             .build()
             .unwrap();
         ctx.draw_text(

@@ -2,10 +2,10 @@ use std::{fs::File, path::PathBuf, rc::Rc};
 
 use clap::Parser;
 use ffmpeg_sidecar::command::FfmpegCommand;
-use piet_common::{Device, ImageFormat, RenderContext};
+use piet_common::{Device, ImageFormat};
 use splits_rs::{
     Splits,
-    draw::{BLOCK_HEIGHT_IN, Context, LINE_THICKNESS_IN, TITLE_HEIGHT_IN},
+    draw::{Context, LINE_THICKNESS_IN, SPLIT_HEIGHT_IN, TIME_HEIGHT_IN, TITLE_HEIGHT_IN},
 };
 
 #[derive(Parser)]
@@ -17,8 +17,12 @@ struct Args {
     output_path: PathBuf,
 
     // In "inches"
-    #[arg(short, long, default_value_t = 10.)]
+    #[arg(short, long, default_value_t = 4.)]
     width: f64,
+
+    // In "inches"
+    #[arg(short, long, default_value_t = 0.1)]
+    padding: f64,
 
     /// "Dots per inch" / pixel density. Determines output width/height.
     #[arg(long, default_value_t = 96.)]
@@ -33,6 +37,7 @@ fn main() -> color_eyre::Result<()> {
         input_path,
         output_path,
         width,
+        padding,
         dpi,
         fps,
     } = Args::parse();
@@ -46,8 +51,9 @@ fn main() -> color_eyre::Result<()> {
     let num_splits = splits.len();
     let num_lines = num_splits - 1;
     let height = (TITLE_HEIGHT_IN
-        + num_splits as f64 * BLOCK_HEIGHT_IN
-        + num_lines as f64 * LINE_THICKNESS_IN) as f64;
+        + num_splits as f64 * SPLIT_HEIGHT_IN
+        + num_lines as f64 * LINE_THICKNESS_IN
+        + TIME_HEIGHT_IN) as f64;
 
     let width_px = (width * dpi) as usize;
     let height_px = (height * dpi) as usize;
@@ -69,7 +75,12 @@ fn main() -> color_eyre::Result<()> {
         .output(output_path.to_str().unwrap())
         .spawn()?;
 
-    context.draw(title_rc, &splits, width_px, height_px, dpi);
+    let last_ms = splits.last().unwrap().ms_since_start;
+    for current_ms in 0..last_ms {
+
+    }
+
+    context.draw(title_rc, &splits, "ok", width_px, height_px, padding, dpi);
 
     bitmap
         .copy_raw_pixels(ImageFormat::RgbaPremul, &mut frame_buf)

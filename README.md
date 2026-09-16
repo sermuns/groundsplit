@@ -2,11 +2,11 @@
 
 # `groundsplit`
 
-</div>
-
 Tiny command-line tool for creating and rendering graphics similar to what LiveSplit[^1] would output.
 
 https://github.com/user-attachments/assets/35a0559f-fcc8-4a8f-8d71-1f53e148f834
+
+</div>
 
 ## How does this compare to LiveSplit[^1]?
 

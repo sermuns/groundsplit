@@ -4,7 +4,7 @@
 
 </div>
 
-Generate graphics similar to what LiveSplit[^1] would output, but **BLAZINGLY FAST!**
+Tiny command-line tool for creating and rendering graphics similar to what LiveSplit[^1] would output.
 
 ## How does this compare to LiveSplit[^1]?
 

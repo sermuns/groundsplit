@@ -27,5 +27,6 @@ LiveSplit is well-suited for real time splitting, and presented as a GUI program
 </a>
 
 </div>
+<br>
 
 [^1]: <https://livesplit.org/>

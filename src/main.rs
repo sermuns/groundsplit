@@ -30,6 +30,10 @@ struct Args {
 
     #[arg(short = 'r', long, default_value_t = 30.)]
     fps: f32,
+
+    /// If given, only render until this many seconds
+    #[arg(short, long)]
+    max_duration_secs: Option<f32>,
 }
 
 fn main() -> color_eyre::Result<()> {
@@ -40,7 +44,9 @@ fn main() -> color_eyre::Result<()> {
         padding,
         dpi,
         fps,
+        max_duration_secs,
     } = Args::parse();
+    dbg!(max_duration_secs);
 
     color_eyre::install()?;
 
@@ -74,17 +80,24 @@ fn main() -> color_eyre::Result<()> {
 
     let video_duration_ms = splits.last().unwrap().ms_since_start;
     let ms_per_frame = 1000. / fps;
-    // WARNING: truncatingk
+    // WARNING: truncating
     let num_frames = (video_duration_ms as f32 / ms_per_frame) as usize;
 
     for frame_number in 0..num_frames {
-        eprintln!("doing frame {}", frame_number);
-
         let milliseconds_since_start = (ms_per_frame * frame_number as f32) as u128;
+        eprintln!(
+            "doing frame {} ({} ms)",
+            frame_number, milliseconds_since_start
+        );
 
         context.draw_to_frame_buf(title_rc.clone(), &splits, milliseconds_since_start);
 
         ffmpeg_child.send_stdin_command(&context.frame_buf).unwrap();
+
+        if max_duration_secs.is_some_and(|s| milliseconds_since_start as f32 / 1000. >= s) {
+            eprintln!("breaking early due to `max_duration_secs` being given");
+            break;
+        }
     }
 
     ffmpeg_child.quit().unwrap();

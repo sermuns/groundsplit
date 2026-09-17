@@ -1,6 +1,6 @@
 use std::fs::File;
 
-use splits_rs::Splits;
+use groundsplit::Splits;
 
 fn main() -> color_eyre::Result<()> {
     let splits = Splits {

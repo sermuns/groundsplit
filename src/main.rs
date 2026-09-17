@@ -2,11 +2,11 @@ use std::{fs::File, path::PathBuf, rc::Rc};
 
 use clap::Parser;
 use ffmpeg_sidecar::command::FfmpegCommand;
-use piet_common::Device;
-use splits_rs::{
+use groundsplit::{
     Splits,
     draw::{Context, LINE_THICKNESS_IN, SPLIT_HEIGHT_IN, TIME_HEIGHT_IN, TITLE_HEIGHT_IN},
 };
+use piet_common::Device;
 
 #[derive(Parser)]
 #[command(version, about)]

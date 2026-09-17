@@ -56,10 +56,10 @@ fn main() -> color_eyre::Result<()> {
 
     let num_splits = splits.len();
     let num_lines = num_splits - 1;
-    let height = (TITLE_HEIGHT_IN
+    let height = TITLE_HEIGHT_IN
         + num_splits as f64 * SPLIT_HEIGHT_IN
         + num_lines as f64 * LINE_THICKNESS_IN
-        + TIME_HEIGHT_IN) as f64;
+        + TIME_HEIGHT_IN;
 
     let width_px = (width * dpi) as usize;
     let height_px = (height * dpi) as usize;

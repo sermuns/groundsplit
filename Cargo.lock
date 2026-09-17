@@ -510,6 +510,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "groundsplit"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "color-eyre",
+ "ffmpeg-sidecar",
+ "piet-common",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -899,18 +911,6 @@ name = "smallvec"
 version = "1.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba467056f1b547ed52077911161fc86985becbc60e8e1857c8a144dab0def891"
-
-[[package]]
-name = "splits-rs"
-version = "0.1.0"
-dependencies = [
- "clap",
- "color-eyre",
- "ffmpeg-sidecar",
- "piet-common",
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "strsim"

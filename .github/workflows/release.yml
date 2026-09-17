@@ -48,6 +48,12 @@ jobs:
         with:
           shared-key: ${{ matrix.build.TARGET }}
 
+      # TODO: only on linux
+      - name: install libs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libglib2.0-dev libcairo2-dev libpango1.0-dev
+
       - name: build
         run: cargo build --release --locked --target ${{ matrix.build.TARGET }}
 
